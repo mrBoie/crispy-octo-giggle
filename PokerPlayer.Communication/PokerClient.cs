@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ConsoleApp1
+namespace PokerPlayer.Communication
 {
     public class PokerClient : IPokerClient, IDisposable
     {
