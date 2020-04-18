@@ -49,6 +49,7 @@ namespace ConsoleApp1
         public static IServiceProvider BuildDi(IConfiguration config)
         {
             return new ServiceCollection()
+                            .AddTransient<ITcpLineClient>(s => new TcpLineClient())
                             .AddSingleton<PokerClient>()
                             .AddLogging(loggingBuilder =>
                                 { 

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using PokerPlayer.Models.CardModels;
+using PokerPlayer.Models.Player;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +13,14 @@ namespace PokerPlayer.Communication
         private ITcpLineClient _tcpLineClient;
         private readonly ILogger<PokerClient> _logger;
 
+        public event EventHandler<PlayerChipUpdate> OnPlayerChipUpdate;
+        public event EventHandler<IEnumerable<Card>> OnHandedCards;
         public event EventHandler<string> OnNameRequested;
         public event EventHandler<int> OnRoundStarting;
 
-        public PokerClient(ILogger<PokerClient> logger)
+        public PokerClient(ITcpLineClient tcpLineClient, ILogger<PokerClient> logger)
         {
-            _tcpLineClient = new TcpLineClient();
+            _tcpLineClient = tcpLineClient;
             _logger = logger;
             _logger.LogInformation("ctor PokerClient");
         }
@@ -40,7 +44,11 @@ namespace PokerPlayer.Communication
                     OnRoundStarting.Invoke(this, int.Parse(messageDivided.Last()));
                     break;
                 case "Cards": //Cards 7h Kc 6s Th 3c
+                    OnHandedCards.Invoke(this, messageDivided.Skip(1).Select(s => new Card(s)));
+                    break;
                 case "Chips": //Chips Client#3526 163
+                    OnPlayerChipUpdate.Invoke(this, new PlayerChipUpdate(messageDivided));
+                    break;
                 case "Round_Win_Undisputed": //'Round_Win_Undisputed Client#107 22'
                 case "Ante_Changed": //Ante_Changed 10
                 case "Forced_Bet": //Forced_Bet Client#548 10
@@ -80,5 +88,7 @@ namespace PokerPlayer.Communication
         event EventHandler<string> OnNameRequested;
 
         event EventHandler<int> OnRoundStarting;
+        event EventHandler<IEnumerable<Card>> OnHandedCards;
+        event EventHandler<PlayerChipUpdate> OnPlayerChipUpdate;
     }
 }
